@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://mern-ecommerce-2-tcjx.onrender.com",
-  withCredentials: true,
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,   // ✅ ADD THIS HERE
 });
 
 export default api;

@@ -69,8 +69,6 @@ mongoose
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
-
       // ✅ REPLACE WITH YOUR REAL VERCEL URL
       "https://mern-ecommerce-sigma-livid.vercel.app",
     ],

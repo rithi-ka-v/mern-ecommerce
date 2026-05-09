@@ -1,38 +1,46 @@
 const Product = require("../../models/Product");
 
+// ================= GET FILTERED PRODUCTS =================
+
 const getFilteredProducts = async (req, res) => {
   try {
-    const { category = [], brand = [], sortBy = "price-lowtohigh" } = req.query;
+    const { category = "", brand = "", sortBy = "price-lowtohigh" } =
+      req.query;
 
     let filters = {};
 
+    // CATEGORY FILTER
     if (category.length) {
-      filters.category = { $in: category.split(",") };
+      filters.category = {
+        $in: category.split(","),
+      };
     }
 
+    // BRAND FILTER
     if (brand.length) {
-      filters.brand = { $in: brand.split(",") };
+      filters.brand = {
+        $in: brand.split(","),
+      };
     }
 
+    // SORTING
     let sort = {};
 
     switch (sortBy) {
       case "price-lowtohigh":
         sort.price = 1;
-
         break;
+
       case "price-hightolow":
         sort.price = -1;
-
         break;
+
       case "title-atoz":
         sort.title = 1;
-
         break;
 
       case "title-ztoa":
         sort.title = -1;
-
         break;
 
       default:
@@ -47,36 +55,45 @@ const getFilteredProducts = async (req, res) => {
       data: products,
     });
   } catch (e) {
-    console.log(error);
+    console.log(e);
+
     res.status(500).json({
       success: false,
-      message: "Some error occured",
+      message: "Some error occurred",
     });
   }
 };
 
+// ================= GET PRODUCT DETAILS =================
+
 const getProductDetails = async (req, res) => {
   try {
     const { id } = req.params;
+
     const product = await Product.findById(id);
 
-    if (!product)
+    if (!product) {
       return res.status(404).json({
         success: false,
-        message: "Product not found!",
+        message: "Product not found",
       });
+    }
 
     res.status(200).json({
       success: true,
       data: product,
     });
   } catch (e) {
-    console.log(error);
+    console.log(e);
+
     res.status(500).json({
       success: false,
-      message: "Some error occured",
+      message: "Some error occurred",
     });
   }
 };
 
-module.exports = { getFilteredProducts, getProductDetails };
+module.exports = {
+  getFilteredProducts,
+  getProductDetails,
+};

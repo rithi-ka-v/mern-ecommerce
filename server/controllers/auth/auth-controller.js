@@ -2,61 +2,91 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../../models/User");
 
-//register
+// ================= REGISTER =================
 const registerUser = async (req, res) => {
   const { userName, email, password } = req.body;
 
   try {
-    const checkUser = await User.findOne({ email });
-    if (checkUser)
-      return res.json({
+    // ✅ 1. VALIDATION (VERY IMPORTANT)
+    if (!userName || !email || !password) {
+      return res.status(400).json({
         success: false,
-        message: "User Already exists with the same email! Please try again",
+        message: "All fields are required",
       });
+    }
 
+    // ✅ 2. CHECK EXISTING USER
+    const checkUser = await User.findOne({ email });
+
+    if (checkUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists with this email",
+      });
+    }
+
+    // ✅ 3. HASH PASSWORD
     const hashPassword = await bcrypt.hash(password, 12);
+
+    // ✅ 4. CREATE USER
     const newUser = new User({
       userName,
       email,
       password: hashPassword,
+      role: "user", // optional but good
     });
 
     await newUser.save();
-    res.status(200).json({
+
+    // ✅ 5. SUCCESS RESPONSE
+    return res.status(201).json({
       success: true,
       message: "Registration successful",
     });
-  } catch (e) {
-    console.log(e);
-    res.status(500).json({
+
+  } catch (error) {
+    console.log("REGISTER ERROR:", error); // 🔥 debug
+    return res.status(500).json({
       success: false,
-      message: "Some error occured",
+      message: "Server error",
     });
   }
 };
 
-//login
+// ================= LOGIN =================
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // ✅ VALIDATION
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+    }
+
+    // ✅ CHECK USER
     const checkUser = await User.findOne({ email });
-    if (!checkUser)
-      return res.json({
-        success: false,
-        message: "User doesn't exists! Please register first",
-      });
 
-    const checkPasswordMatch = await bcrypt.compare(
-      password,
-      checkUser.password
-    );
-    if (!checkPasswordMatch)
-      return res.json({
+    if (!checkUser) {
+      return res.status(404).json({
         success: false,
-        message: "Incorrect password! Please try again",
+        message: "User doesn't exist! Please register first",
       });
+    }
 
+    // ✅ CHECK PASSWORD
+    const isMatch = await bcrypt.compare(password, checkUser.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect password",
+      });
+    }
+
+    // ✅ GENERATE TOKEN
     const token = jwt.sign(
       {
         id: checkUser._id,
@@ -64,57 +94,75 @@ const loginUser = async (req, res) => {
         email: checkUser.email,
         userName: checkUser.userName,
       },
-      "CLIENT_SECRET_KEY",
+      process.env.JWT_SECRET,
       { expiresIn: "60m" }
     );
 
-    res.cookie("token", token, { httpOnly: true, secure: false }).json({
+    // ✅ SET COOKIE
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // change to true in production (HTTPS)
+      sameSite: "lax",
+    });
+
+    // ✅ RESPONSE
+    return res.status(200).json({
       success: true,
       message: "Logged in successfully",
+      token,
       user: {
+        id: checkUser._id,
         email: checkUser.email,
         role: checkUser.role,
-        id: checkUser._id,
         userName: checkUser.userName,
       },
     });
-  } catch (e) {
-    console.log(e);
-    res.status(500).json({
+
+  } catch (error) {
+    console.log("LOGIN ERROR:", error);
+    return res.status(500).json({
       success: false,
-      message: "Some error occured",
+      message: "Server error",
     });
   }
 };
 
-//logout
-
+// ================= LOGOUT =================
 const logoutUser = (req, res) => {
-  res.clearCookie("token").json({
+  res.clearCookie("token");
+
+  return res.status(200).json({
     success: true,
-    message: "Logged out successfully!",
+    message: "Logged out successfully",
   });
 };
 
-//auth middleware
+// ================= AUTH MIDDLEWARE =================
 const authMiddleware = async (req, res, next) => {
   const token = req.cookies.token;
-  if (!token)
+
+  if (!token) {
     return res.status(401).json({
       success: false,
-      message: "Unauthorised user!",
+      message: "Unauthorized user",
     });
+  }
 
   try {
-    const decoded = jwt.verify(token, "CLIENT_SECRET_KEY");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
-      message: "Unauthorised user!",
+      message: "Unauthorized user",
     });
   }
 };
 
-module.exports = { registerUser, loginUser, logoutUser, authMiddleware };
+module.exports = {
+  registerUser,
+  loginUser,
+  logoutUser,
+  authMiddleware,
+};

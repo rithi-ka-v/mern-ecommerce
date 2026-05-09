@@ -210,14 +210,14 @@ function ShoppingHome() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {productList && productList.length > 0
-              ? productList.map((productItem) => (
-                  <ShoppingProductTile
-                    handleGetProductDetails={handleGetProductDetails}
-                    product={productItem}
-                    handleAddtoCart={handleAddtoCart}
-                  />
-                ))
-              : null}
+  ? productList.map((item) => (
+      <div key={item._id} style={{ border: "1px solid black", padding: "10px" }}>
+        <img src={item.image} width="150" />
+        <h3>{item.title}</h3>
+        <p>₹{item.salePrice}</p>
+      </div>
+    ))
+  : <p>No products</p>}
           </div>
         </div>
       </section>

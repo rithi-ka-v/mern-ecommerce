@@ -75,10 +75,11 @@ function HeaderRightContent() {
     dispatch(logoutUser());
   }
 
-  useEffect(() => {
-    dispatch(fetchCartItems(user?.id));
-  }, [dispatch]);
-
+ useEffect(() => {
+  if (user?.id) {
+    dispatch(fetchCartItems(user.id));
+  }
+}, [dispatch, user]);
   console.log(cartItems, "sangam");
 
   return (

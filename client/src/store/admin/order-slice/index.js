@@ -4,15 +4,15 @@ import axios from "axios";
 const initialState = {
   orderList: [],
   orderDetails: null,
+  isLoading: false,
 };
 
 export const getAllOrdersForAdmin = createAsyncThunk(
   "/order/getAllOrdersForAdmin",
   async () => {
     const response = await axios.get(
-      `http://localhost:5000/api/admin/orders/get`
+      "http://localhost:5000/api/admin/orders/get"
     );
-
     return response.data;
   }
 );
@@ -23,7 +23,6 @@ export const getOrderDetailsForAdmin = createAsyncThunk(
     const response = await axios.get(
       `http://localhost:5000/api/admin/orders/details/${id}`
     );
-
     return response.data;
   }
 );
@@ -33,11 +32,8 @@ export const updateOrderStatus = createAsyncThunk(
   async ({ id, orderStatus }) => {
     const response = await axios.put(
       `http://localhost:5000/api/admin/orders/update/${id}`,
-      {
-        orderStatus,
-      }
+      { orderStatus }
     );
-
     return response.data;
   }
 );
@@ -47,8 +43,6 @@ const adminOrderSlice = createSlice({
   initialState,
   reducers: {
     resetOrderDetails: (state) => {
-      console.log("resetOrderDetails");
-
       state.orderDetails = null;
     },
   },
@@ -59,18 +53,19 @@ const adminOrderSlice = createSlice({
       })
       .addCase(getAllOrdersForAdmin.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.orderList = action.payload.data;
+        state.orderList = action.payload?.data || [];
       })
       .addCase(getAllOrdersForAdmin.rejected, (state) => {
         state.isLoading = false;
         state.orderList = [];
       })
+
       .addCase(getOrderDetailsForAdmin.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(getOrderDetailsForAdmin.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.orderDetails = action.payload.data;
+        state.orderDetails = action.payload?.data || null;
       })
       .addCase(getOrderDetailsForAdmin.rejected, (state) => {
         state.isLoading = false;
@@ -80,5 +75,4 @@ const adminOrderSlice = createSlice({
 });
 
 export const { resetOrderDetails } = adminOrderSlice.actions;
-
 export default adminOrderSlice.reducer;

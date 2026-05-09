@@ -6,6 +6,17 @@ const initialState = {
   productList: [],
   productDetails: null,
 };
+export const searchProducts = createAsyncThunk(
+  "products/searchProducts",
+
+  async (keyword) => {
+    const response = await axios.get(
+      `http://localhost:5000/api/shop/products/search/${keyword}`
+    );
+
+    return response.data;
+  }
+);
 
 export const fetchAllFilteredProducts = createAsyncThunk(
   "/products/fetchAllProducts",
@@ -19,6 +30,8 @@ export const fetchAllFilteredProducts = createAsyncThunk(
 
     const result = await axios.get(
       `http://localhost:5000/api/shop/products/get?${query}`
+      ,
+  { withCredentials: true }
     );
 
     console.log(result);

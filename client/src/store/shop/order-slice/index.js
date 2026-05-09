@@ -9,56 +9,53 @@ const initialState = {
   orderDetails: null,
 };
 
+// ================= CREATE ORDER =================
 export const createNewOrder = createAsyncThunk(
-  "/order/createNewOrder",
+  "order/createNewOrder",
   async (orderData) => {
     const response = await axios.post(
       "http://localhost:5000/api/shop/order/create",
       orderData
     );
-
     return response.data;
   }
 );
 
+// ================= CAPTURE PAYMENT =================
 export const capturePayment = createAsyncThunk(
-  "/order/capturePayment",
+  "order/capturePayment",
   async ({ paymentId, payerId, orderId }) => {
     const response = await axios.post(
       "http://localhost:5000/api/shop/order/capture",
-      {
-        paymentId,
-        payerId,
-        orderId,
-      }
+      { paymentId, payerId, orderId }
     );
-
     return response.data;
   }
 );
 
+// ================= GET USER ORDERS =================
 export const getAllOrdersByUserId = createAsyncThunk(
-  "/order/getAllOrdersByUserId",
+  "order/getAllOrdersByUserId",
   async (userId) => {
     const response = await axios.get(
       `http://localhost:5000/api/shop/order/list/${userId}`
     );
-
     return response.data;
   }
 );
 
+// ================= GET ORDER DETAILS =================
 export const getOrderDetails = createAsyncThunk(
-  "/order/getOrderDetails",
+  "order/getOrderDetails",
   async (id) => {
     const response = await axios.get(
       `http://localhost:5000/api/shop/order/details/${id}`
     );
-
     return response.data;
   }
 );
 
+// ================= SLICE =================
 const shoppingOrderSlice = createSlice({
   name: "shoppingOrderSlice",
   initialState,
@@ -69,16 +66,19 @@ const shoppingOrderSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+
+      // ---------- CREATE ORDER ----------
       .addCase(createNewOrder.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(createNewOrder.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.approvalURL = action.payload.approvalURL;
-        state.orderId = action.payload.orderId;
+        state.approvalURL = action.payload?.approvalURL;
+        state.orderId = action.payload?.orderId;
+
         sessionStorage.setItem(
           "currentOrderId",
-          JSON.stringify(action.payload.orderId)
+          JSON.stringify(action.payload?.orderId)
         );
       })
       .addCase(createNewOrder.rejected, (state) => {
@@ -86,23 +86,27 @@ const shoppingOrderSlice = createSlice({
         state.approvalURL = null;
         state.orderId = null;
       })
+
+      // ---------- GET ORDERS ----------
       .addCase(getAllOrdersByUserId.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(getAllOrdersByUserId.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.orderList = action.payload.data;
+        state.orderList = action.payload?.data || [];
       })
       .addCase(getAllOrdersByUserId.rejected, (state) => {
         state.isLoading = false;
         state.orderList = [];
       })
+
+      // ---------- ORDER DETAILS ----------
       .addCase(getOrderDetails.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(getOrderDetails.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.orderDetails = action.payload.data;
+        state.orderDetails = action.payload?.data || null;
       })
       .addCase(getOrderDetails.rejected, (state) => {
         state.isLoading = false;

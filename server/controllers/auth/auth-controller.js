@@ -99,11 +99,12 @@ const loginUser = async (req, res) => {
     );
 
     // ✅ SET COOKIE
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false, // change to true in production (HTTPS)
-      sameSite: "lax",
-    });
+   res.cookie("token", token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  maxAge: 60 * 60 * 1000,
+});
 
     // ✅ RESPONSE
     return res.status(200).json({
@@ -129,8 +130,11 @@ const loginUser = async (req, res) => {
 
 // ================= LOGOUT =================
 const logoutUser = (req, res) => {
-  res.clearCookie("token");
-
+ res.clearCookie("token", {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+});
   return res.status(200).json({
     success: true,
     message: "Logged out successfully",

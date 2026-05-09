@@ -72,7 +72,7 @@ app.use(
       "http://localhost:5173",
 
       // ✅ REPLACE WITH YOUR REAL VERCEL URL
-      "https://mern-ecommerce-sigma-livid.vercel.app/",
+      "https://mern-ecommerce-sigma-livid.vercel.app",
     ],
 
     methods: [

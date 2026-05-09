@@ -83,12 +83,15 @@ app.use(
     allowedHeaders: [
       "Content-Type",
       "Authorization",
+       "cache-control",
+      "Cache-Control",
       
     ],
 
     credentials: true,
   })
 );
+app.options("*", cors());
 
 // ================= MIDDLEWARE =================
 

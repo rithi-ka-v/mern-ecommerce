@@ -70,7 +70,7 @@ app.use(
   cors({
     origin: [
       // ✅ REPLACE WITH YOUR REAL VERCEL URL
-      "https://mern-ecommerce-sigma-livid.vercel.app",
+       "https://mern-ecommerce-sigma-livid.vercel.app",
     ],
 
     methods: [
